@@ -2,18 +2,17 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Player from './components/Player';
 import { Song, SearchHistoryItem } from './types';
-import { FEATURED_SONGS as SONGS } from './constants'; // เราใช้ชื่อ SONGS แทนในไฟล์นี้
-import { searchMusicWithAI } from './services/geminiService';
+import { FEATURED_SONGS as SONGS } from './constants'; 
 
 const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState('home');
-  // แก้ไข: เปลี่ยนจาก FEATURED_SONGS เป็น SONGS
   const [currentSong, setCurrentSong] = useState<Song | null>(SONGS[0]); 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Song[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>([]);
 
+  // โหลดประวัติการค้นหาจากเครื่อง
   useEffect(() => {
     const saved = localStorage.getItem('casino888_history');
     if (saved) {
@@ -25,46 +24,52 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // บันทึกประวัติการค้นหาลงเครื่อง
   useEffect(() => {
     localStorage.setItem('casino888_history', JSON.stringify(searchHistory));
   }, [searchHistory]);
 
   // --- ฟังก์ชันสำหรับเปลี่ยนเพลง ---
   const handleNext = () => {
-    // แก้ไข: เปลี่ยนจาก FEATURED_SONGS เป็น SONGS
     const songsList = activeTab === 'search' ? searchResults : SONGS;
+    if (songsList.length === 0) return;
     const currentIndex = songsList.findIndex(s => s.id === currentSong?.id);
-    if (currentIndex !== -1) {
-      const nextIndex = (currentIndex + 1) % songsList.length;
-      setCurrentSong(songsList[nextIndex]);
-    }
+    const nextIndex = (currentIndex + 1) % songsList.length;
+    setCurrentSong(songsList[nextIndex]);
   };
 
   const handleBack = () => {
-    // แก้ไข: เปลี่ยนจาก FEATURED_SONGS เป็น SONGS
     const songsList = activeTab === 'search' ? searchResults : SONGS;
+    if (songsList.length === 0) return;
     const currentIndex = songsList.findIndex(s => s.id === currentSong?.id);
-    if (currentIndex !== -1) {
-      const prevIndex = (currentIndex - 1 + songsList.length) % songsList.length;
-      setCurrentSong(songsList[prevIndex]);
-    }
+    const prevIndex = (currentIndex - 1 + songsList.length) % songsList.length;
+    setCurrentSong(songsList[prevIndex]);
   };
 
-  const handleSearch = async (query: string) => {
+  // --- ระบบค้นหาแบบใหม่ (ไม่ใช้ AI) ---
+  const handleSearch = (query: string) => {
     if (!query.trim()) return;
     
     setIsSearching(true);
     setActiveTab('search');
     
+    // บันทึกประวัติ
     setSearchHistory(prev => {
       const filtered = prev.filter(item => item.query.toLowerCase() !== query.toLowerCase());
       return [{ query, timestamp: Date.now() }, ...filtered].slice(0, 10);
     });
 
-    const results = await searchMusicWithAI(query);
-    // แก้ไข: เปลี่ยนจาก FEATURED_SONGS เป็น SONGS
-    setSearchResults(results.length > 0 ? results : SONGS);
-    setIsSearching(false);
+    // ค้นหาจากเพลงที่มีในเครื่อง (กรองชื่อเพลงหรือชื่อศิลปิน)
+    const filteredSongs = SONGS.filter(song => 
+      song.title.toLowerCase().includes(query.toLowerCase()) || 
+      song.artist.toLowerCase().includes(query.toLowerCase())
+    );
+
+    // จำลองการโหลดนิดหน่อยให้ดูสวยงาม
+    setTimeout(() => {
+      setSearchResults(filteredSongs);
+      setIsSearching(false);
+    }, 400);
   };
 
   const removeFromHistory = (idx: number) => {
@@ -85,7 +90,7 @@ const App: React.FC = () => {
             <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
             <input 
               type="text" 
-              placeholder="Search Casino 888 Tracks..."
+              placeholder="Search in your library..."
               className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-all text-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -108,7 +113,7 @@ const App: React.FC = () => {
             <section className="animate-in fade-in slide-in-from-top-2">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
-                  <i className="fas fa-history text-amber-500"></i> Recently Played
+                  <i className="fas fa-history text-amber-500"></i> Recently Searched
                 </h2>
                 <button onClick={() => setSearchHistory([])} className="text-xs text-amber-500 hover:underline">Clear</button>
               </div>
@@ -133,7 +138,6 @@ const App: React.FC = () => {
                 <span className="w-1 h-8 bg-amber-500"></span> Hit The Jackpot
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                {/* แก้ไข: เปลี่ยนจาก FEATURED_SONGS เป็น SONGS */}
                 {SONGS.map((song) => (
                   <div 
                     key={song.id}
@@ -159,27 +163,34 @@ const App: React.FC = () => {
           {activeTab === 'search' && (
             <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               <h2 className="text-3xl font-black italic tracking-tighter mb-8 uppercase">
-                {isSearching ? 'Spinning...' : `Results for "${searchQuery}"`}
+                {isSearching ? 'Searching...' : `Results for "${searchQuery}"`}
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                {searchResults.map((song) => (
-                  <div 
-                    key={song.id}
-                    onClick={() => selectSong(song)}
-                    className={`bg-slate-900/50 p-4 rounded-2xl cursor-pointer group transition-all border ${currentSong?.id === song.id ? 'border-amber-500' : 'border-transparent hover:border-slate-800'}`}
-                  >
-                    <div className="relative mb-4 aspect-square overflow-hidden rounded-xl">
-                      <img src={song.coverUrl} className="w-full h-full object-cover" alt={song.title} />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <i className="fas fa-play text-white text-xl"></i>
+              {searchResults.length > 0 ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                  {searchResults.map((song) => (
+                    <div 
+                      key={song.id}
+                      onClick={() => selectSong(song)}
+                      className={`bg-slate-900/50 p-4 rounded-2xl cursor-pointer group transition-all border ${currentSong?.id === song.id ? 'border-amber-500' : 'border-transparent hover:border-slate-800'}`}
+                    >
+                      <div className="relative mb-4 aspect-square overflow-hidden rounded-xl">
+                        <img src={song.coverUrl} className="w-full h-full object-cover" alt={song.title} />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <i className="fas fa-play text-white text-xl"></i>
+                        </div>
                       </div>
+                      <div className="text-[10px] text-amber-500 font-bold uppercase mb-1 tracking-widest">{song.genre}</div>
+                      <h3 className="font-bold truncate">{song.title}</h3>
+                      <p className="text-slate-500 text-sm truncate">{song.artist}</p>
                     </div>
-                    <div className="text-[10px] text-amber-500 font-bold uppercase mb-1 tracking-widest">{song.genre}</div>
-                    <h3 className="font-bold truncate">{song.title}</h3>
-                    <p className="text-slate-500 text-sm truncate">{song.artist}</p>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-20 bg-slate-900/20 rounded-3xl border border-dashed border-slate-800">
+                  <i className="fas fa-compact-disc fa-spin text-4xl text-slate-700 mb-4"></i>
+                  <p className="text-slate-500">No tracks found in the lobby.</p>
+                </div>
+              )}
             </section>
           )}
 
@@ -210,7 +221,7 @@ const App: React.FC = () => {
                 <div className="bg-slate-800/50 px-8 py-4 border-b border-slate-800 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-slate-300">
                     <i className="fas fa-file-lines text-amber-500"></i>
-                    <h2 className="font-black uppercase tracking-widest text-[10px]">Score & Performance Data</h2>
+                    <h2 className="font-black uppercase tracking-widest text-[10px]">Score & Lyrics Data</h2>
                   </div>
                 </div>
                 <div className="p-10">
