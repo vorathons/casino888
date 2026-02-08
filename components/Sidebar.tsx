@@ -15,8 +15,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
 
   return (
     <>
-      {/* --- เวอร์ชัน Desktop (Sidebar ด้านข้าง) --- */}
-      <aside className="w-64 bg-slate-950 flex-col hidden md:flex h-screen border-r border-slate-900 sticky top-0">
+      {/* --- Desktop & iPad Sidebar (โชว์เมื่อจอใหญ่กว่ามือถือ) --- */}
+      <aside className="w-64 bg-slate-950 flex-col hidden sm:flex h-screen border-r border-slate-900 sticky top-0">
         <div className="p-8">
           <Logo />
         </div>
@@ -37,19 +37,15 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
             </button>
           ))}
         </nav>
-
-        <div className="p-6 text-slate-600 text-[10px] text-center border-t border-slate-900 font-bold tracking-widest uppercase">
-          &copy; 2024 CASINO 888
-        </div>
       </aside>
 
-      {/* --- เวอร์ชัน Mobile (แถบเมนูด้านล่าง) --- */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-900 px-4 py-2 flex justify-around items-center z-50">
+      {/* --- Mobile Bottom Nav (โชว์เฉพาะในมือถือ) --- */}
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 bg-slate-950/95 backdrop-blur-md border-t border-slate-900 px-6 py-3 flex justify-around items-center z-[100] pb-8">
         {menuItems.map((item) => (
           <button
             key={item.id}
             onClick={() => setActiveTab(item.id)}
-            className={`flex flex-col items-center gap-1 p-2 transition-all ${
+            className={`flex flex-col items-center gap-1 transition-all ${
               activeTab === item.id ? 'text-amber-500' : 'text-slate-500'
             }`}
           >
