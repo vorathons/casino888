@@ -61,10 +61,6 @@ const App: React.FC = () => {
     }, 400);
   };
 
-  const removeFromHistory = (idx: number) => {
-    setSearchHistory(prev => prev.filter((_, i) => i !== idx));
-  };
-
   const selectSong = (song: Song) => {
     setCurrentSong(song);
   };
@@ -74,7 +70,7 @@ const App: React.FC = () => {
       <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
       
       <main className="flex-1 pb-32 overflow-y-auto">
-        <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-sm p-6 flex items-center justify-between border-b border-slate-900">
+        <header className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-sm p-4 md:p-6 flex items-center justify-between border-b border-slate-900">
           <div className="relative w-full max-w-xl">
             <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"></i>
             <input 
@@ -86,23 +82,15 @@ const App: React.FC = () => {
               onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
             />
           </div>
-          
-          <div className="hidden md:flex items-center gap-4 ml-4">
-            <div className="flex flex-col items-end">
-              <span className="text-xs font-bold text-amber-500">VIP LISTENER</span>
-              <span className="text-sm font-medium text-slate-400">Alex Chen</span>
-            </div>
-            <img src="https://picsum.photos/seed/user/32/32" className="w-10 h-10 rounded-full border-2 border-amber-500/50" alt="user" />
-          </div>
         </header>
 
-        <div className="p-6 md:p-10 space-y-12">
+        <div className="p-4 md:p-10 space-y-12">
           {activeTab === 'home' && (
             <section>
-              <h2 className="text-3xl font-black italic tracking-tighter mb-8 text-white uppercase flex items-center gap-3">
+              <h2 className="text-2xl md:text-3xl font-black italic tracking-tighter mb-8 text-white uppercase flex items-center gap-3">
                 <span className="w-1 h-8 bg-amber-500"></span> Hit The Jackpot
               </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-6">
                 {SONGS.map((song) => (
                   <div 
                     key={song.id}
@@ -120,32 +108,18 @@ const App: React.FC = () => {
             </section>
           )}
 
-          {activeTab === 'search' && (
-            <section className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <h2 className="text-3xl font-black italic tracking-tighter mb-8 uppercase">Results</h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-                {searchResults.map((song) => (
-                  <div key={song.id} onClick={() => selectSong(song)} className="bg-slate-900/50 p-4 rounded-2xl cursor-pointer border border-transparent hover:border-slate-800">
-                    <img src={song.coverUrl} className="w-full aspect-square rounded-xl mb-4" alt="" />
-                    <h3 className="font-bold truncate text-sm">{song.title}</h3>
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
           {activeTab === 'notes' && currentSong && (
             <section className="animate-in fade-in slide-in-from-right-2 duration-300 max-w-4xl mx-auto">
               <div className="flex flex-col md:flex-row gap-8 items-center md:items-start mb-12">
                 <img src={currentSong.coverUrl} className="w-64 h-64 rounded-2xl shadow-2xl border-4 border-amber-500/20" alt="" />
                 <div className="flex-1 text-center md:text-left">
-                  <h1 className="text-6xl font-black mb-2 tracking-tighter italic uppercase text-white">{currentSong.title}</h1>
-                  <p className="text-2xl text-slate-400 mb-6 font-medium">{currentSong.artist}</p>
+                  <h1 className="text-4xl md:text-6xl font-black mb-2 tracking-tighter italic uppercase text-white leading-tight">{currentSong.title}</h1>
+                  <p className="text-xl md:text-2xl text-slate-400 mb-6 font-medium">{currentSong.artist}</p>
                 </div>
               </div>
               <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl">
-                <div className="p-10 overflow-x-auto">
-                  <pre className="font-mono text-xl text-slate-300 whitespace-pre leading-relaxed border-l-2 border-amber-500/20 pl-6">
+                <div className="p-6 md:p-10 overflow-x-auto">
+                  <pre className="font-mono text-sm md:text-xl text-slate-300 whitespace-pre leading-relaxed border-l-2 border-amber-500/20 pl-6">
                     {currentSong.notes || "No score data available."}
                   </pre>
                 </div>
